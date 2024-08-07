@@ -32,7 +32,7 @@ export const useMemberStore = defineStore(
     persist: {
       storage: {
         getItem(key) {
-          uni.getStorageSync(key)
+          return uni.getStorageSync(key)
         },
         setItem(key, value) {
           uni.setStorageSync(key, value)
