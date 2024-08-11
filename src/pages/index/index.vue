@@ -14,6 +14,7 @@ const bannerList = ref<BannerItem[]>([])
 const categoryList = ref<CategoryItem[]>([])
 const hotList = ref<HotItem[]>([])
 const XtxGuessRef = ref<XtxGuessInstance>()
+const isTriggered = ref(false)
 const getHomeBanner = async () => {
   const { result } = await getHomeBannerAPI(1)
   bannerList.value = result
@@ -32,6 +33,18 @@ const onScrollToLower = () => {
   XtxGuessRef.value?.getMore()
 }
 
+const refresh = async () => {
+  isTriggered.value = true
+  XtxGuessRef.value?.resetData()
+  await Promise.all([
+    getHomeBanner(),
+    getHomeCategory(),
+    getHomeHot(),
+    XtxGuessRef.value?.getMore(),
+  ])
+  isTriggered.value = false
+}
+
 onLoad(() => {
   getHomeBanner()
   getHomeCategory()
@@ -41,7 +54,14 @@ onLoad(() => {
 
 <template>
   <CustomNavbar />
-  <scroll-view @scrolltolower="onScrollToLower" class="scroll-view" scroll-y>
+  <scroll-view
+    refresher-enabled
+    :refresher-triggered="isTriggered"
+    @refresherrefresh="refresh"
+    @scrolltolower="onScrollToLower"
+    class="scroll-view"
+    scroll-y
+  >
     <XtxSwiper :list="bannerList" />
     <CategoryPanel :list="categoryList" />
     <HotPanel :list="hotList" />

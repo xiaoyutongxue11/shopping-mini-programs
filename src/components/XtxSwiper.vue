@@ -11,7 +11,7 @@ const onChange: UniHelper.SwiperOnChange = (e) => {
 
 <template name="XtxSwiper">
   <view class="carousel">
-    <swiper :circular="true" :autoplay="false" :interval="3000" @change="onChange">
+    <swiper :circular="true" :autoplay="true" :interval="3000" @change="onChange">
       <swiper-item v-for="item in list" :key="item.id">
         <navigator url="/pages/index/index" hover-class="none" class="navigator">
           <image mode="aspectFill" class="image" :src="item.imgUrl"></image>
