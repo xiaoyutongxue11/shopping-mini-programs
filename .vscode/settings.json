@@ -9,5 +9,9 @@
   "files.associations": {
     "pages.json": "jsonc", // pages.json 可以写注释
     "manifest.json": "jsonc" // manifest.json 可以写注释
-  }
+  },
+  "create-uniapp-view.name": "与文件夹同名",
+  "create-uniapp-view.directory": true,
+  "create-uniapp-view.template": "vue3",
+  "create-uniapp-view.style": "less"
 }
