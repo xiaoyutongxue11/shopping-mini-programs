@@ -9,12 +9,15 @@ import CategoryPanel from './components/CategoryPanel.vue'
 import HotPanel from './components/HotPanel.vue'
 import XtxGuess from '@/components/XtxGuess.vue'
 import type { XtxGuessInstance } from '@/types/component'
+import PageSkeleton from './components/PageSkeleton.vue'
 
 const bannerList = ref<BannerItem[]>([])
 const categoryList = ref<CategoryItem[]>([])
 const hotList = ref<HotItem[]>([])
 const XtxGuessRef = ref<XtxGuessInstance>()
 const isTriggered = ref(false)
+const isLoading = ref(false)
+
 const getHomeBanner = async () => {
   const { result } = await getHomeBannerAPI(1)
   bannerList.value = result
@@ -45,10 +48,10 @@ const refresh = async () => {
   isTriggered.value = false
 }
 
-onLoad(() => {
-  getHomeBanner()
-  getHomeCategory()
-  getHomeHot()
+onLoad(async () => {
+  isLoading.value = true
+  await Promise.all([getHomeBanner(), getHomeCategory(), getHomeHot()])
+  isLoading.value = false
 })
 </script>
 
@@ -62,10 +65,13 @@ onLoad(() => {
     class="scroll-view"
     scroll-y
   >
-    <XtxSwiper :list="bannerList" />
-    <CategoryPanel :list="categoryList" />
-    <HotPanel :list="hotList" />
-    <XtxGuess ref="XtxGuessRef" />
+    <PageSkeleton v-if="isLoading" />
+    <template v-else>
+      <XtxSwiper :list="bannerList" />
+      <CategoryPanel :list="categoryList" />
+      <HotPanel :list="hotList" />
+      <XtxGuess ref="XtxGuessRef" />
+    </template>
   </scroll-view>
 </template>
 
