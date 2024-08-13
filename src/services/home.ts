@@ -1,7 +1,7 @@
 import { http } from '@/utils/http'
 import type { BannerItem, CategoryItem, HotItem, GuessItem } from '@/types/home'
 import type { PageResult, PageParams } from '@/types/global'
-export const getHomeBannerAPI = (distributionSite: 1) => {
+export const getHomeBannerAPI = (distributionSite: number = 1) => {
   return http<BannerItem[]>({
     method: 'GET',
     url: '/home/banner',
