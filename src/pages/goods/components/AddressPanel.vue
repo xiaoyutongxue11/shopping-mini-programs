@@ -4,7 +4,6 @@ const emits = defineEmits<{
   (event: 'close'): void
 }>()
 </script>
-
 <template>
   <view class="address-panel">
     <!-- 关闭按钮 -->
