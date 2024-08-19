@@ -95,7 +95,7 @@
 			}
 		]
 	},
-  // 分包界面
+	// 分包界面
 	"subPackages": [
 		{
 			"root": "pagesMember",
@@ -105,16 +105,26 @@
 					"style": {
 						"navigationBarTitleText": "设置"
 					}
+				},
+				{
+					"path": "profile/profile",
+					"style": {
+            "navigationStyle": "custom",
+            "navigationBarTextStyle": "white",
+						"navigationBarTitleText": "个人中心"
+					}
 				}
 			]
 		}
 	],
-  // 分包预下载规则
-  "preloadRule": {
-    // 在打开my界面、在任何网络状态下加载分包pagesMember
-    "pages/my/my": {
-      "network": "all",
-      "packages": ["pagesMember"]
-    }
-  }
+	// 分包预下载规则
+	"preloadRule": {
+		// 在打开my界面、在任何网络状态下加载分包pagesMember
+		"pages/my/my": {
+			"network": "all",
+			"packages": [
+				"pagesMember"
+			]
+		}
+	}
 }
