@@ -14,6 +14,14 @@ export const useMemberStore = defineStore(
       profile.value = val
     }
 
+    const setNickname = (name: string) => {
+      profile.value!.nickname = name
+    }
+
+    const setAvatar = (src: string) => {
+      profile.value!.avatar = src
+    }
+
     // 清理会员信息，退出时使用
     const clearProfile = () => {
       profile.value = undefined
@@ -23,6 +31,8 @@ export const useMemberStore = defineStore(
     return {
       profile,
       setProfile,
+      setNickname,
+      setAvatar,
       clearProfile,
     }
   },
