@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { postMemberAddressAPI } from '@/services/address'
+import {
+  postMemberAddressAPI,
+  getMemberAddressByIdAPI,
+  putMemberAddressById,
+} from '@/services/address'
+import { onLoad } from '@dcloudio/uni-app'
 
 // 表单数据
 const form = ref({
@@ -16,7 +21,32 @@ const form = ref({
 
 const query = defineProps<{ id?: string }>()
 uni.setNavigationBarTitle({ title: query.id ? '修改地址' : '新建地址' })
+const formRef = ref<UniHelper.UniFormsInstance>()
 
+const rules: UniHelper.UniFormsRules = {
+  receiver: {
+    rules: [{ required: true, errorMessage: '请输入收货人姓名' }],
+  },
+  contact: {
+    rules: [
+      { required: true, errorMessage: '请输入联系方式' },
+      { pattern: /^1[3-9]\d{9}$/, errorMessage: '请输入11位的手机号码' },
+    ],
+  },
+  fullLocation: {
+    rules: [{ required: true, errorMessage: '请选择所在地区' }],
+  },
+  address: {
+    rules: [{ required: true, errorMessage: '请填写详细地址' }],
+  },
+}
+
+const getMemberAddressById = async () => {
+  if (query.id) {
+    const { result } = await getMemberAddressByIdAPI(query.id)
+    Object.assign(form.value, result)
+  }
+}
 const onPickChange: UniHelper.RegionPickerOnChange = (e) => {
   form.value.fullLocation = e.detail.value.join(' ')
   const [provinceCode, cityCode, countyCode] = e.detail.code!
@@ -27,44 +57,57 @@ const onSwitchChange: UniHelper.SwitchOnChange = (e) => {
   form.value.isDefault = e.detail.value ? 1 : 0
 }
 const onSubmit = async () => {
-  const { result } = await postMemberAddressAPI(form.value)
-  uni.showToast({
-    icon: 'success',
-    title: result.id ? '新建成功' : '修改成功',
-    duration: 500,
-    success: () => {
-      setTimeout(() => {
-        uni.navigateBack()
-      }, 500)
-    },
-  })
+  try {
+    await formRef.value?.validate?.()
+    if (query.id) await putMemberAddressById(query.id, form.value)
+    else await postMemberAddressAPI(form.value)
+    uni.showToast({
+      icon: 'success',
+      title: query.id ? '修改成功' : '新建成功',
+      duration: 500,
+      success: () => {
+        setTimeout(() => {
+          uni.navigateBack()
+        }, 500)
+      },
+    })
+  } catch (err) {
+    uni.showToast({
+      icon: 'error',
+      title: '填写信息有误',
+    })
+  }
 }
+
+onLoad(() => {
+  getMemberAddressById()
+})
 </script>
 
 <template>
   <view class="content">
-    <form>
+    <uni-forms :rules="rules" :model="form" ref="formRef">
       <!-- 表单内容 -->
-      <view class="form-item">
+      <uni-forms-item name="receiver" class="form-item"> 
         <text class="label">收货人</text>
         <input class="input" placeholder="请填写收货人姓名" v-model="form.receiver" />
-      </view>
-      <view class="form-item">
+      </uni-forms-item>
+      <uni-forms-item name="contact" class="form-item">
         <text class="label">手机号码</text>
         <input class="input" placeholder="请填写收货人手机号码" v-model="form.contact" />
-      </view>
-      <view class="form-item">
+      </uni-forms-item>
+      <uni-forms-item name="fullLocation" class="form-item">
         <text class="label">所在地区</text>
         <picker class="picker" mode="region" value="" @change="onPickChange">
           <view v-if="form.fullLocation">{{ form.fullLocation }}</view>
           <view v-else class="placeholder">请选择省/市/区(县)</view>
         </picker>
-      </view>
-      <view class="form-item">
+      </uni-forms-item>
+      <uni-forms-item name="address" class="form-item">
         <text class="label">详细地址</text>
         <input class="input" placeholder="街道、楼牌号等信息" v-model="form.address" />
-      </view>
-      <view class="form-item">
+      </uni-forms-item>
+      <uni-forms-item class="form-item">
         <label class="label">设为默认地址</label>
         <switch
           class="switch"
@@ -72,8 +115,8 @@ const onSubmit = async () => {
           :checked="form.isDefault === 1 ? true : form.isDefault === 0 ? false : null"
           @change="onSwitchChange"
         />
-      </view>
-    </form>
+      </uni-forms-item>
+    </uni-forms>
   </view>
   <!-- 提交按钮 -->
   <button class="button" @tap="onSubmit">保存并使用</button>
