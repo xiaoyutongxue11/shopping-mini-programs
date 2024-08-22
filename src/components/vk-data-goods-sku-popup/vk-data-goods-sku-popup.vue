@@ -6,127 +6,152 @@
 如有问题，可加Q群：22466457 反馈
  -->
 <template>
-	<view class="vk-data-goods-sku-popup" :style="{ zIndex: zIndex }" catchtouchmove="true" :class="valueCom && complete ? 'show' : 'none'" @touchmove.stop.prevent="moveHandle" @click.stop="stop">
-		<!-- 页面内容开始 -->
-		<view class="mask" @click="close('mask')"></view>
-		<view class="layer attr-content" :class="{'safe-area-inset-bottom':safeAreaInsetBottom }" :style="{ borderRadius: borderRadius + 'rpx ' + borderRadius + 'rpx 0 0' }">
-			<view class="specification-wrapper">
-				<scroll-view class="specification-wrapper-content" scroll-y="true">
-					<view class="specification-header">
-						<view class="specification-left">
-							<image
-								class="product-img"
-								:src="selectShop.image ? selectShop.image : goodsInfo[goodsThumbName]"
-								:style="{ backgroundColor: goodsThumbBackgroundColor }"
-								mode="aspectFill"
-								@click="previewImage"
-							></image>
-						</view>
-						<view class="specification-right">
-							<view class="price-content" :style="{ color: themeColorFn('priceColor') }">
-								<text class="sign">¥</text>
-								<text class="price" :class="priceCom.length > 16 ? 'price2' : ''">{{ priceCom }}</text>
-							</view>
-							<view class="inventory" v-if="!hideStock">{{ stockText }}：{{ stockCom }}</view>
-							<view class="inventory" v-else></view>
-							<view class="choose" v-show="isManyCom">已选：{{ selectArr.join(' ') }}</view>
-						</view>
-					</view>
+  <view
+    class="vk-data-goods-sku-popup"
+    :style="{ zIndex: zIndex }"
+    catchtouchmove="true"
+    :class="valueCom && complete ? 'show' : 'none'"
+    @touchmove.stop.prevent="moveHandle"
+    @click.stop="stop"
+  >
+    <!-- 页面内容开始 -->
+    <view class="mask" @click="close('mask')"></view>
+    <view
+      class="layer attr-content"
+      :class="{ 'safe-area-inset-bottom': safeAreaInsetBottom }"
+      :style="{ borderRadius: borderRadius + 'rpx ' + borderRadius + 'rpx 0 0' }"
+    >
+      <view class="specification-wrapper">
+        <scroll-view class="specification-wrapper-content" scroll-y="true">
+          <view class="specification-header">
+            <view class="specification-left">
+              <image
+                class="product-img"
+                :src="selectShop.image ? selectShop.image : goodsInfo[goodsThumbName]"
+                :style="{ backgroundColor: goodsThumbBackgroundColor }"
+                mode="aspectFill"
+                @click="previewImage"
+              ></image>
+            </view>
+            <view class="specification-right">
+              <view class="price-content" :style="{ color: themeColorFn('priceColor') }">
+                <text class="sign">¥</text>
+                <text class="price" :class="priceCom.length > 16 ? 'price2' : ''">{{
+                  priceCom
+                }}</text>
+              </view>
+              <view class="inventory" v-if="!hideStock">{{ stockText }}：{{ stockCom }}</view>
+              <view class="inventory" v-else></view>
+              <view class="choose" v-show="isManyCom">已选：{{ selectArr.join(' ') }}</view>
+            </view>
+          </view>
 
-					<view class="specification-content">
-						<view v-show="isManyCom" class="specification-item" v-for="(item, index1) in goodsInfo[specListName]" :key="index1">
-							<view class="item-title">{{ item.name }}</view>
-							<view class="item-wrapper">
-								<view
-									class="item-content"
-									v-for="(item_value, index2) in item.list"
-									:key="index2"
-									:class="[item_value.ishow ? '' : 'noactived', subIndex[index1] == index2 ? 'actived' : '']"
-									:style="[
-										item_value.ishow ? '' : themeColorFn('disableStyle'),
-										item_value.ishow ? themeColorFn('btnStyle') : '',
-										subIndex[index1] == index2 ? themeColorFn('activedStyle') : ''
-									]"
-									@click="skuClick(item_value, index1, index2)"
-								>
-									{{ item_value.name }}
-								</view>
-							</view>
-						</view>
-						<view class="number-box-view">
-							<view style="flex: 1;">数量</view>
-							<view style="flex: 4;text-align: right;">
-								<vk-data-input-number-box
-									v-model="selectNum"
-									:min="minBuyNum || 1"
-									:max="maxBuyNumCom"
-									:step="stepBuyNum || 1"
-									:step-strictly="stepStrictly"
-									:positive-integer="true"
-									@change="numChange"
-								></vk-data-input-number-box>
-							</view>
-						</view>
-					</view>
-				</scroll-view>
-				<view class="close" @click="close('close')" v-if="showClose != false"><image class="close-item" :src="closeImage"></image></view>
-			</view>
+          <view class="specification-content">
+            <view
+              v-show="isManyCom"
+              class="specification-item"
+              v-for="(item, index1) in goodsInfo[specListName]"
+              :key="index1"
+            >
+              <view class="item-title">{{ item.name }}</view>
+              <view class="item-wrapper">
+                <view
+                  class="item-content"
+                  v-for="(item_value, index2) in item.list"
+                  :key="index2"
+                  :class="[
+                    item_value.ishow ? '' : 'noactived',
+                    subIndex[index1] == index2 ? 'actived' : '',
+                  ]"
+                  :style="[
+                    item_value.ishow ? '' : themeColorFn('disableStyle'),
+                    item_value.ishow ? themeColorFn('btnStyle') : '',
+                    subIndex[index1] == index2 ? themeColorFn('activedStyle') : '',
+                  ]"
+                  @click="skuClick(item_value, index1, index2)"
+                >
+                  {{ item_value.name }}
+                </view>
+              </view>
+            </view>
+            <view class="number-box-view">
+              <view style="flex: 1">数量</view>
+              <view style="flex: 4; text-align: right">
+                <vk-data-input-number-box
+                  v-model="selectNum"
+                  :min="minBuyNum || 1"
+                  :max="maxBuyNumCom"
+                  :step="stepBuyNum || 1"
+                  :step-strictly="stepStrictly"
+                  :positive-integer="true"
+                  @change="numChange"
+                ></vk-data-input-number-box>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
+        <view class="close" @click="close('close')" v-if="showClose != false"
+          ><image class="close-item" :src="closeImage"></image
+        ></view>
+      </view>
 
-			<view class="btn-wrapper" v-if="outFoStock || mode == 4">
-				<view class="sure" style="color:#ffffff;background-color:#cccccc">{{ noStockText }}</view>
-			</view>
-			<view class="btn-wrapper" v-else-if="mode == 1">
-				<view
-					class="sure add-cart"
-					style="border-radius:38rpx 0rpx 0rpx 38rpx;"
-					:style="{
-						color: themeColorFn('addCartColor'),
-						backgroundColor: themeColorFn('addCartBackgroundColor')
-					}"
-					@click="addCart"
-				>
-					{{ addCartText }}
-				</view>
+      <view class="btn-wrapper" v-if="outFoStock || mode == 4">
+        <view class="sure" style="color: #ffffff; background-color: #cccccc">{{
+          noStockText
+        }}</view>
+      </view>
+      <view class="btn-wrapper" v-else-if="mode == 1">
+        <view
+          class="sure add-cart"
+          style="border-radius: 38rpx 0rpx 0rpx 38rpx"
+          :style="{
+            color: themeColorFn('addCartColor'),
+            backgroundColor: themeColorFn('addCartBackgroundColor'),
+          }"
+          @click="addCart"
+        >
+          {{ addCartText }}
+        </view>
 
-				<view
-					class="sure"
-					style="border-radius:0rpx 38rpx 38rpx 0rpx;"
-					:style="{
-						color: themeColorFn('buyNowColor'),
-						backgroundColor: themeColorFn('buyNowBackgroundColor')
-					}"
-					@click="buyNow"
-				>
-					{{ buyNowText }}
-				</view>
-			</view>
-			<view class="btn-wrapper" v-else-if="mode == 2">
-				<view
-					class="sure add-cart"
-					:style="{
-						color: themeColorFn('addCartColor'),
-						backgroundColor: themeColorFn('addCartBackgroundColor')
-					}"
-					@click="addCart"
-				>
-					{{ addCartText }}
-				</view>
-			</view>
-			<view class="btn-wrapper" v-else-if="mode == 3">
-				<view
-					class="sure"
-					:style="{
-						color: themeColorFn('buyNowColor'),
-						backgroundColor: themeColorFn('buyNowBackgroundColor')
-					}"
-					@click="buyNow"
-				>
-					{{ buyNowText }}
-				</view>
-			</view>
-		</view>
-		<!-- 页面内容结束 -->
-	</view>
+        <view
+          class="sure"
+          style="border-radius: 0rpx 38rpx 38rpx 0rpx"
+          :style="{
+            color: themeColorFn('buyNowColor'),
+            backgroundColor: themeColorFn('buyNowBackgroundColor'),
+          }"
+          @click="buyNow"
+        >
+          {{ buyNowText }}
+        </view>
+      </view>
+      <view class="btn-wrapper" v-else-if="mode == 2">
+        <view
+          class="sure add-cart"
+          :style="{
+            color: themeColorFn('addCartColor'),
+            backgroundColor: themeColorFn('addCartBackgroundColor'),
+          }"
+          @click="addCart"
+        >
+          {{ addCartText }}
+        </view>
+      </view>
+      <view class="btn-wrapper" v-else-if="mode == 3">
+        <view
+          class="sure"
+          :style="{
+            color: themeColorFn('buyNowColor'),
+            backgroundColor: themeColorFn('buyNowBackgroundColor'),
+          }"
+          @click="buyNow"
+        >
+          {{ buyNowText }}
+        </view>
+      </view>
+    </view>
+    <!-- 页面内容结束 -->
+  </view>
 </template>
 
 <script>
