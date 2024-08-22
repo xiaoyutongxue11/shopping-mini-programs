@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { getGoodsByIdAPI } from '@/services/goods'
 import { onLoad } from '@dcloudio/uni-app'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { GoodsResult } from '@/types/goods'
 import ServicePanel from './components/ServicePanel.vue'
 import AddressPanel from './components/AddressPanel.vue'
 import vkDataGoodsSkuPopup from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup.vue'
-import type { SkuPopupLocaldata } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
+import type {
+  SkuPopupLocaldata,
+  SkuPopupInstance,
+  SkuPopupEvent,
+} from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
+import { postMemberCartAPI } from '@/services/cart'
 
 enum SkuMode {
   Both = 1,
@@ -24,6 +29,7 @@ const popupName = ref<'address' | 'service'>()
 const isShowSkuPopup = ref(false)
 const goodsInfo = ref({} as SkuPopupLocaldata)
 const skuMode = ref<SkuMode>(SkuMode.Both)
+const skuPopupRef = ref<SkuPopupInstance>()
 
 const getGoodsById = async () => {
   const { result } = await getGoodsByIdAPI(query.id)
@@ -66,6 +72,21 @@ const openSkuPopup = (val: SkuMode) => {
   skuMode.value = val
 }
 
+const selectedText = computed(() => {
+  return skuPopupRef.value?.selectArr?.join(' ').trim() || '请选择商品规格'
+})
+
+const onAddCart = async (e: SkuPopupEvent) => {
+  await postMemberCartAPI({ skuId: e._id, count: e.buy_num })
+  uni.showToast({
+    icon: 'success',
+    title: '添加成功',
+    success: () => {
+      isShowSkuPopup.value = false
+    },
+  })
+}
+
 onLoad(() => {
   getGoodsById()
 })
@@ -74,11 +95,14 @@ onLoad(() => {
 <template>
   <vk-data-goods-sku-popup
     v-model="isShowSkuPopup"
+    ref="skuPopupRef"
     :localdata="goodsInfo"
     :mode="skuMode"
     add-cart-background-color="#FFA868"
     buy-now-background-color="#27BA9B"
-  ></vk-data-goods-sku-popup>
+    :actived-style="{ color: '#27BA9B', borderColor: '#27BA9B', backgroundColor: '#E9F8F5' }"
+    @add-cart="onAddCart"
+  />
   <scroll-view scroll-y class="viewport">
     <!-- 基本信息 -->
     <view class="goods">
@@ -110,7 +134,7 @@ onLoad(() => {
       <view class="action">
         <view class="item arrow" @tap="openSkuPopup(SkuMode.Both)">
           <text class="label">选择</text>
-          <text class="text ellipsis"> 请选择商品规格 </text>
+          <text class="text ellipsis"> {{ selectedText }} </text>
         </view>
         <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
