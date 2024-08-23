@@ -35,7 +35,7 @@ const loginSuccess = async (profile: LoginResult) => {
     icon: 'success',
     title: '登录成功',
   })
-  uni.switchTab({ url: '/pages/my/my' })
+  uni.navigateBack()
 }
 </script>
 

@@ -38,15 +38,15 @@ const getGoodsById = async () => {
     _id: result.id,
     name: result.name,
     goods_thumb: result.mainPictures[0],
-    spec_list: result.specs.map((item) => ({ name: item.name, list: item.values })),
-    sku_list: result.skus.map((item) => ({
-      _id: item.id,
+    spec_list: result.specs.map((v) => ({ name: v.name, list: v.values })),
+    sku_list: result.skus.map((v) => ({
+      _id: v.id,
       goods_id: result.id,
       goods_name: result.name,
-      image: item.picture,
-      price: item.price * 100,
-      sku_name_arr: item.specs.map((it) => it.valueName),
-      stock: item.inventory,
+      image: v.picture,
+      price: v.price * 100, // 注意：需要乘以 100
+      stock: v.inventory,
+      sku_name_arr: v.specs.map((vv) => vv.valueName),
     })),
   }
 }
