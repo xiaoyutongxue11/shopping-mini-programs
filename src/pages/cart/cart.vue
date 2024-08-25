@@ -47,7 +47,7 @@ const onSelectChange = (item: CartItem) => {
 }
 
 const isSelectAll = computed(() => {
-  return cartList.value && cartList.value.every((item) => item.selected)
+  return cartList.value?.length && cartList.value.every((item) => item.selected)
 })
 
 const onSelectAllChange = () => {
@@ -56,6 +56,22 @@ const onSelectAllChange = () => {
     item.selected = _isSelectAll!
   })
   putMemberCartSelectedAPI({ selected: _isSelectAll! })
+}
+
+const payList = computed(() => {
+  return cartList.value?.filter((item) => item.selected)
+})
+
+const payListCount = computed(() => {
+  return payList.value?.reduce((total, item) => total + item.count, 0)
+})
+
+const payListAmount = computed(() => {
+  return payList.value?.reduce((amount, item) => amount + item.count * item.nowPrice, 0).toFixed(2)
+})
+
+const onPay = () => {
+  if (payListCount.value === 0) uni.showToast({ title: '请选择商品', icon: 'none' })
 }
 
 onShow(() => {
@@ -133,9 +149,15 @@ onShow(() => {
       <view class="toolbar">
         <text class="all" :class="{ checked: isSelectAll }" @tap="onSelectAllChange">全选</text>
         <text class="text">合计:</text>
-        <text class="amount">100</text>
+        <text class="amount">{{ payListAmount }}</text>
         <view class="button-grounp">
-          <view class="button payment-button" :class="{ disabled: true }"> 去结算(10) </view>
+          <view
+            class="button payment-button"
+            :class="{ disabled: payListCount === 0 }"
+            @tap="onPay"
+          >
+            去结算({{ payListCount }})
+          </view>
         </view>
       </view>
     </template>
