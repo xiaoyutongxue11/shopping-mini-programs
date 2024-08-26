@@ -72,6 +72,9 @@ const payListAmount = computed(() => {
 
 const onPay = () => {
   if (payListCount.value === 0) uni.showToast({ title: '请选择商品', icon: 'none' })
+  uni.navigateTo({
+    url: '/pagesOrder/create/create',
+  })
 }
 
 onShow(() => {
