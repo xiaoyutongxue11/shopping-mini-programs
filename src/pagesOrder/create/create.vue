@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getMemberOrderPreAPI } from '@/services/order'
+import { getMemberOrderPreAPI, getMemberOrderPreNowAPI, postMemberOrderAPI } from '@/services/order'
 import { onLoad } from '@dcloudio/uni-app'
 import { computed, ref } from 'vue'
 import type { OrderPreResult } from '@/types/order'
@@ -34,9 +34,54 @@ const orderAddress = computed(() => {
   )
 })
 
+const query = defineProps<{
+  skuId?: string
+  count?: number
+}>()
+
+const onOrderSubmit = async () => {
+  if (!orderAddress.value) {
+    uni.showToast({
+      icon: 'none',
+      title: '请选择收货地址',
+    })
+    return
+  }
+  const { result } = await postMemberOrderAPI({
+    addressId: orderAddress.value.id,
+    deliveryTimeType: activeDelivery.value.type,
+    buyerMessage: buyerMessage.value,
+    goods: orderPre.value!.goods.map((item) => ({
+      skuId: item.skuId,
+      count: item.count,
+    })),
+    payChannel: 2,
+    payType: 1,
+  })
+  uni.showToast({
+    icon: 'success',
+    title: '订单提交成功',
+    success: () => {
+      uni.redirectTo({
+        url: `/pagesOrder/detail/detail?id=${result.id}`,
+      })
+    },
+  })
+}
+
 onLoad(async () => {
-  const { result } = await getMemberOrderPreAPI()
-  orderPre.value = result
+  console.log(orderAddress.value)
+  if (query.skuId && query.count) {
+    const { result } = await getMemberOrderPreNowAPI({
+      skuId: query.skuId,
+      count: query.count,
+      addressId: addressStore.selectedAddress?.id,
+    })
+    orderPre.value = result
+  } else {
+    const { result } = await getMemberOrderPreAPI()
+    orderPre.value = result
+  }
 })
 </script>
 
@@ -122,7 +167,7 @@ onLoad(async () => {
     <view class="total-pay symbol">
       <text class="number">{{ orderPre?.summary.totalPayPrice.toFixed(2) }}</text>
     </view>
-    <view class="button" :class="{ disabled: true }"> 提交订单 </view>
+    <view class="button" :class="{ disabled: !orderAddress }" @tap="onOrderSubmit"> 提交订单 </view>
   </view>
 </template>
 

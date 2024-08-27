@@ -12,6 +12,7 @@ import type {
   SkuPopupEvent,
 } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
 import { postMemberCartAPI } from '@/services/cart'
+import { useAddressStore } from '@/stores/modules/address'
 
 enum SkuMode {
   Both = 1,
@@ -30,6 +31,7 @@ const isShowSkuPopup = ref(false)
 const goodsInfo = ref({} as SkuPopupLocaldata)
 const skuMode = ref<SkuMode>(SkuMode.Both)
 const skuPopupRef = ref<SkuPopupInstance>()
+const addressStore = useAddressStore()
 
 const getGoodsById = async () => {
   const { result } = await getGoodsByIdAPI(query.id)
@@ -87,6 +89,18 @@ const onAddCart = async (e: SkuPopupEvent) => {
   })
 }
 
+const onBuyNow = (e: SkuPopupEvent) => {
+  uni.navigateTo({
+    url: `/pagesOrder/create/create?skuId=${e._id}&count=${e.buy_num}`,
+  })
+}
+
+const address = computed(() => {
+  return addressStore.selectedAddress
+    ? addressStore.selectedAddress.fullLocation + addressStore.selectedAddress.address
+    : '请选择收获地址'
+})
+
 onLoad(() => {
   getGoodsById()
 })
@@ -102,6 +116,7 @@ onLoad(() => {
     buy-now-background-color="#27BA9B"
     :actived-style="{ color: '#27BA9B', borderColor: '#27BA9B', backgroundColor: '#E9F8F5' }"
     @add-cart="onAddCart"
+    @buy-now="onBuyNow"
   />
   <scroll-view scroll-y class="viewport">
     <!-- 基本信息 -->
@@ -138,7 +153,7 @@ onLoad(() => {
         </view>
         <view class="item arrow" @tap="openPopup('address')">
           <text class="label">送至</text>
-          <text class="text ellipsis"> 请选择收获地址 </text>
+          <text class="text ellipsis"> {{ address }} </text>
         </view>
         <view class="item arrow" @tap="openPopup('service')">
           <text class="label">服务</text>
@@ -161,7 +176,7 @@ onLoad(() => {
           </view>
         </view>
         <!-- 图片详情 -->
-        <image v-for="src in goods?.details.pictures" mode="widthFix" :src="src"></image>
+        <image v-for="src in goods?.details.pictures" :key="src" mode="widthFix" :src="src"></image>
       </view>
     </view>
 

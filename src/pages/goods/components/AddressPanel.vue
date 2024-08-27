@@ -1,8 +1,34 @@
-// AddressPanel.vue
 <script name="AddressPanel" setup lang="ts">
+import { getMemberAddressAPI, getMemberAddressByIdAPI } from '@/services/address'
+import type { AddressItem } from '@/types/address'
+import { onMounted } from 'vue'
+import { ref } from 'vue'
+import { useAddressStore } from '@/stores/modules/address'
+import { computed } from 'vue'
+
+const addressStore = useAddressStore()
 const emits = defineEmits<{
   (event: 'close'): void
 }>()
+const addressId = computed(() => {
+  return addressStore.selectedAddress?.id || undefined
+})
+const addressList = ref<AddressItem[]>()
+
+const getAddressList = async () => {
+  const { result } = await getMemberAddressAPI()
+  addressList.value = result
+}
+
+const onRadioChange = async (e: any) => {
+  const { result } = await getMemberAddressByIdAPI(e.detail.value)
+  addressStore.changeSelectedAddress(result)
+  emits('close')
+}
+
+onMounted(() => {
+  getAddressList()
+})
 </script>
 <template>
   <view class="address-panel">
@@ -12,21 +38,14 @@ const emits = defineEmits<{
     <view class="title">配送至</view>
     <!-- 内容 -->
     <view class="content">
-      <view class="item">
-        <view class="user">李明 13824686868</view>
-        <view class="address">北京市顺义区后沙峪地区安平北街6号院</view>
-        <text class="icon icon-checked"></text>
-      </view>
-      <view class="item">
-        <view class="user">王东 13824686868</view>
-        <view class="address">北京市顺义区后沙峪地区安平北街6号院</view>
-        <text class="icon icon-ring"></text>
-      </view>
-      <view class="item">
-        <view class="user">张三 13824686868</view>
-        <view class="address">北京市朝阳区孙河安平北街6号院</view>
-        <text class="icon icon-ring"></text>
-      </view>
+      <radio-group :value="addressId" @change="onRadioChange">
+        <view class="item" v-for="item in addressList" :key="item.id">
+          <view class="user">{{ item.receiver }} {{ item.contact }}</view>
+          <view class="address">{{ item.fullLocation }} {{ item.address }}</view>
+          <!-- <text class="icon icon-checked"></text> -->
+          <radio :value="item.id" color="#27ba9b" class="icon" :checked="addressId === item.id" />
+        </view>
+      </radio-group>
     </view>
     <view class="footer">
       <view class="button primary"> 新建地址 </view>
