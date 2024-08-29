@@ -1,4 +1,4 @@
-import type { OrderPreResult } from '@/types/order'
+import type { OrderPreResult, OrderResult } from '@/types/order'
 import { http } from '@/utils/http'
 import type { OrderCreateParams, OrderCreateResult } from '@/types/order'
 /**
@@ -28,5 +28,12 @@ export const postMemberOrderAPI = (data: OrderCreateParams) => {
     method: 'POST',
     url: '/member/order',
     data,
+  })
+}
+
+export const getMemberOrderAPI = (id: string) => {
+  return http<OrderResult>({
+    method: 'GET',
+    url: `/member/order/${id}`,
   })
 }

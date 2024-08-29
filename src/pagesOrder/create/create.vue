@@ -70,7 +70,6 @@ const onOrderSubmit = async () => {
 }
 
 onLoad(async () => {
-  console.log(orderAddress.value)
   if (query.skuId && query.count) {
     const { result } = await getMemberOrderPreNowAPI({
       skuId: query.skuId,
