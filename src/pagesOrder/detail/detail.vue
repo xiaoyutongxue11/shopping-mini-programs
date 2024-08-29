@@ -6,6 +6,11 @@ import { onLoad, onReady } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import { OrderState, orderStateList } from '@/services/constants'
 import PageSkeleton from './component/PageSkeleton.vue'
+import {
+  getPayWxPayMiniPayAPI,
+  getPayMockAPI,
+  getMemberOrderConsignmentByIdAPI,
+} from '@/services/pay'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
@@ -78,6 +83,31 @@ const onTimeUp = () => {
   order.value!.orderState = OrderState.YiQuXiao
 }
 
+const onOrderPay = async () => {
+  if (import.meta.env.DEV) {
+    await getPayMockAPI({ orderId: query.id })
+  } else {
+    const { result } = await getPayWxPayMiniPayAPI({ orderId: query.id })
+    wx.requestPayment(result)
+  }
+  uni.redirectTo({ url: `/pagesOrder/payment/payment?id=${query.id}` })
+}
+
+const isDev = import.meta.env.DEV
+
+const onOrderSend = async () => {
+  if (isDev) {
+    await getMemberOrderConsignmentByIdAPI(query.id)
+    uni.showToast({
+      icon: 'none',
+      title: '发货成功',
+      success: () => {
+        order.value!.orderState = OrderState.DaiShouHuo
+      },
+    })
+  }
+}
+
 onLoad(() => {
   getMemberOrderById()
 })
@@ -117,7 +147,7 @@ onLoad(() => {
               @timeup="onTimeUp"
             />
           </view>
-          <view class="button">去支付</view>
+          <view class="button" @tap="onOrderPay">去支付</view>
         </template>
         <!-- 其他订单状态:展示再次购买按钮 -->
         <template v-else>
@@ -132,7 +162,13 @@ onLoad(() => {
               再次购买
             </navigator>
             <!-- 待发货状态：模拟发货,开发期间使用,用于修改订单状态为已发货 -->
-            <view v-if="false" class="button"> 模拟发货 </view>
+            <view
+              v-if="isDev && order.orderState === OrderState.DaiFaHuo"
+              class="button"
+              @tap="onOrderSend"
+            >
+              模拟发货
+            </view>
           </view>
         </template>
       </view>
