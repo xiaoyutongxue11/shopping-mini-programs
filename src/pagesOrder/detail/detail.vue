@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // import { useGuessList } from '@/composables'
 import { getMemberOrderAPI } from '@/services/order'
-import type { OrderResult } from '@/types/order'
+import type { LogisticItem, OrderResult } from '@/types/order'
 import { onLoad, onReady } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 import { OrderState, orderStateList } from '@/services/constants'
@@ -10,6 +10,8 @@ import {
   getPayWxPayMiniPayAPI,
   getPayMockAPI,
   getMemberOrderConsignmentByIdAPI,
+  putMemberOrderReceiptByIdAPI,
+  getMemberOrderLogisticsByIdAPI,
 } from '@/services/pay'
 
 // 获取屏幕边界到安全区域距离
@@ -103,8 +105,32 @@ const onOrderSend = async () => {
       title: '发货成功',
       success: () => {
         order.value!.orderState = OrderState.DaiShouHuo
+        getMemberOrderLogisticsById()
       },
     })
+  }
+}
+
+const onOrderConfirm = () => {
+  uni.showModal({
+    content: '为保障您的权益，请收到货确认无误后再确认收货',
+    success: async (res) => {
+      if (res.confirm) {
+        const { result } = await putMemberOrderReceiptByIdAPI(query.id)
+        order.value = result
+      }
+    },
+  })
+}
+const logisticsList = ref<LogisticItem[]>()
+const getMemberOrderLogisticsById = async () => {
+  if (
+    [OrderState.DaiShouHuo, OrderState.DaiPingJia, OrderState.YiWanCheng].includes(
+      order.value!.orderState,
+    )
+  ) {
+    const { result } = await getMemberOrderLogisticsByIdAPI(query.id)
+    logisticsList.value = result.list
   }
 }
 
@@ -169,21 +195,28 @@ onLoad(() => {
             >
               模拟发货
             </view>
+            <view
+              v-if="order.orderState === OrderState.DaiShouHuo"
+              class="button"
+              @tap="onOrderConfirm"
+            >
+              确认收货
+            </view>
           </view>
         </template>
       </view>
       <!-- 配送状态 -->
       <view class="shipment">
         <!-- 订单物流信息 -->
-        <view v-for="item in 1" :key="item" class="item">
+        <view v-for="item in logisticsList" :key="item.id" class="item">
           <view class="message">
-            您已在广州市天河区黑马程序员完成取件，感谢使用菜鸟驿站，期待再次为您服务。
+            {{ item.text }}
           </view>
-          <view class="date"> 2023-04-14 13:14:20 </view>
+          <view class="date"> {{ item.time }} </view>
         </view>
         <!-- 用户收货地址 -->
         <view class="locate">
-          <view class="user"> zhangsan {{ order.receiverContact }} </view>
+          <view class="user"> {{ order.receiverContact }} {{ order.receiverMobile }} </view>
           <view class="address"> {{ order.receiverAddress }} </view>
         </view>
       </view>
