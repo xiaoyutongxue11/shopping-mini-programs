@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// import { useGuessList } from '@/composables'
+import { useXtxGuess } from '@/composables'
 
 // 获取页面参数
 const query = defineProps<{
@@ -7,12 +7,11 @@ const query = defineProps<{
 }>()
 
 // 猜你喜欢
-// const { guessRef, onScrolltolower } = useGuessList()
+const { XtxGuessRef, onScrollToLower } = useXtxGuess()
 </script>
 
 <template>
-  <!-- @scrolltolower="onScrolltolower" -->
-  <scroll-view class="viewport" scroll-y>
+  <scroll-view class="viewport" scroll-y @scrolltolower="onScrollToLower">
     <!-- 订单状态 -->
     <view class="overview">
       <view class="status icon-checked">支付成功</view>
@@ -37,7 +36,7 @@ const query = defineProps<{
     </view>
 
     <!-- 猜你喜欢 -->
-    <!-- <XtxGuess ref="guessRef" /> -->
+    <XtxGuess ref="XtxGuessRef" />
   </scroll-view>
 </template>
 

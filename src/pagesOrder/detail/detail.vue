@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// import { useGuessList } from '@/composables'
+import { useXtxGuess } from '@/composables'
 import { getMemberOrderAPI } from '@/services/order'
 import type { LogisticItem, OrderResult } from '@/types/order'
 import { onLoad, onReady } from '@dcloudio/uni-app'
@@ -12,12 +12,13 @@ import {
   getMemberOrderConsignmentByIdAPI,
   putMemberOrderReceiptByIdAPI,
   getMemberOrderLogisticsByIdAPI,
+  deleteMemberOrderAPI,
 } from '@/services/pay'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
 // 猜你喜欢
-// const { guessRef, onScrolltolower } = useGuessList()
+const { XtxGuessRef, onScrollToLower } = useXtxGuess()
 // 弹出层组件
 const popup = ref<UniHelper.UniPopupInstance>()
 // 取消原因列表
@@ -134,6 +135,24 @@ const getMemberOrderLogisticsById = async () => {
   }
 }
 
+const onOrderDelete = () => {
+  uni.showModal({
+    content: '确定要删除该订单吗？',
+    success: async (res) => {
+      if (res.confirm) {
+        await deleteMemberOrderAPI({ ids: [query.id] })
+        uni.showToast({
+          icon: 'none',
+          title: '删除成功',
+          success: () => {
+            uni.redirectTo({ url: '/pagesOrder/list/list' })
+          },
+        })
+      }
+    },
+  })
+}
+
 onLoad(() => {
   getMemberOrderById()
 })
@@ -153,8 +172,7 @@ onLoad(() => {
       <view class="title">订单详情</view>
     </view>
   </view>
-  <!-- @scrolltolower="onScrolltolower" -->
-  <scroll-view scroll-y class="viewport" id="scroller">
+  <scroll-view scroll-y class="viewport" id="scroller" @scrolltolower="onScrollToLower">
     <template v-if="order">
       <!-- 订单状态 -->
       <view class="overview" :style="{ paddingTop: safeAreaInsets!.top + 20 + 'px' }">
@@ -245,7 +263,7 @@ onLoad(() => {
             </view>
           </navigator>
           <!-- 待评价状态:展示按钮 -->
-          <view class="action" v-if="true">
+          <view class="action" v-if="order.orderState === OrderState.DaiPingJia">
             <view class="button primary">申请售后</view>
             <navigator url="" class="button"> 去评价 </navigator>
           </view>
@@ -279,13 +297,13 @@ onLoad(() => {
       </view>
 
       <!-- 猜你喜欢 -->
-      <!-- <XtxGuess ref="guessRef" /> -->
+      <XtxGuess ref="XtxGuessRef" />
 
       <!-- 底部操作栏 -->
       <view class="toolbar-height" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }"></view>
       <view class="toolbar" :style="{ paddingBottom: safeAreaInsets?.bottom + 'px' }">
         <!-- 待付款状态:展示支付按钮 -->
-        <template v-if="true">
+        <template v-if="order.orderState === OrderState.DaiFuKuan">
           <view class="button primary"> 去支付 </view>
           <view class="button" @tap="popup?.open?.()"> 取消订单 </view>
         </template>
@@ -299,11 +317,19 @@ onLoad(() => {
             再次购买
           </navigator>
           <!-- 待收货状态: 展示确认收货 -->
-          <view class="button primary"> 确认收货 </view>
+          <view class="button primary" v-if="order.orderState === OrderState.DaiShouHuo">
+            确认收货
+          </view>
           <!-- 待评价状态: 展示去评价 -->
-          <view class="button"> 去评价 </view>
+          <view class="button" v-if="order.orderState === OrderState.DaiPingJia"> 去评价 </view>
           <!-- 待评价/已完成/已取消 状态: 展示删除订单 -->
-          <view class="button delete"> 删除订单 </view>
+          <view
+            class="button delete"
+            v-if="order.orderState >= OrderState.DaiPingJia"
+            @tap="onOrderDelete"
+          >
+            删除订单
+          </view>
         </template>
       </view>
     </template>
